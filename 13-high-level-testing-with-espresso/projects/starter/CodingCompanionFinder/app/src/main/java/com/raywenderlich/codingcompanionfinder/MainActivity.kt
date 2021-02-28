@@ -51,9 +51,9 @@ class MainActivity : AppCompatActivity() {
 
   var token: Token = Token()
 
-  var apiKey = "replace with your API key"
+  var apiKey = BuildConfig.PET_FINDER_API_KEY
 
-  val apiSecret = "replace with your API secret"
+  val apiSecret = BuildConfig.PET_FINDER_API_SECRET
 
   var accessToken = ""
 
