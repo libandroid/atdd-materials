@@ -115,7 +115,9 @@ class SearchForCompanionFragment : Fragment() {
             }
           }
         } else {
-          noResultsTextView?.visibility = VISIBLE
+          GlobalScope.launch(Dispatchers.Main) {
+            noResultsTextView?.visibility = VISIBLE
+          }
         }
       }
     }
