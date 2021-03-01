@@ -30,13 +30,24 @@
 
 package com.raywenderlich.codingcompanionfinder
 
+import android.content.Intent
 import androidx.test.InstrumentationRegistry
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.runner.AndroidJUnit4
-
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import org.junit.Assert.assertEquals
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.junit.Assert.*
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -44,11 +55,52 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+class FindCompanionInstrumentedTest {
+
+  lateinit var testScenario: ActivityScenario<MainActivity>
+
+  companion object {
+
+    private lateinit var startIntent: Intent
+
+    val server = MockWebServer()
+
+    val dispatcher: Dispatcher = object : Dispatcher() {
+
+      @Throws(InterruptedException::class)
+      override fun dispatch(
+        request: RecordedRequest
+      ): MockResponse {
+        return CommonTestDataUtil.dispatch(request) ?: MockResponse().setResponseCode(404)
+      }
+    }
+
+    @BeforeClass
+    @JvmStatic
+    fun setup() {
+      server.setDispatcher(dispatcher)
+      server.start()
+
+      startIntent = Intent(ApplicationProvider.getApplicationContext(), MainActivity::class.java)
+      startIntent.putExtra(MainActivity.PETFINDER_URI, server.url("").toString())
+    }
+  }
+
   @Test
   fun useAppContext() {
     // Context of the app under test.
     val appContext = InstrumentationRegistry.getTargetContext()
     assertEquals("com.raywenderlich.codingcompanionfinder", appContext.packageName)
+  }
+
+  @Test
+  fun pressing_the_find_bottom_menu_item_takes_the_user_to_the_find_page() {
+    testScenario = ActivityScenario.launch(startIntent)
+
+    onView(withId(R.id.searchForCompanionFragment)).perform(click())
+    onView(withId(R.id.searchButton)).check(matches(isDisplayed()))
+    onView(withId(R.id.searchFieldText)).check(matches(isDisplayed()))
+
+    testScenario.close()
   }
 }

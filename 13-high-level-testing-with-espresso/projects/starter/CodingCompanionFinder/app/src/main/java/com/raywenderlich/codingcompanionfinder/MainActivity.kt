@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
+    intent.getStringExtra(PETFINDER_KEY)?.let{ apiKey = it }
 
     if (petFinderService == null) {
       val logger = HttpLoggingInterceptor()
@@ -71,8 +72,9 @@ class MainActivity : AppCompatActivity() {
           .addInterceptor(AuthorizationInterceptor(this))
           .build()
 
+      val baseUrl: String = intent.getStringExtra(PETFINDER_URI) ?: "http://api.petfinder.com/v2/"
       petFinderService = Retrofit.Builder()
-          .baseUrl("https://api.petfinder.com/v2/")
+          .baseUrl(baseUrl)
           .addConverterFactory(GsonConverterFactory.create())
           .addCallAdapterFactory(CoroutineCallAdapterFactory())
           .client(client)
@@ -89,5 +91,10 @@ class MainActivity : AppCompatActivity() {
     val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
     NavigationUI.setupWithNavController(bottomNavigation, navHostController)
+  }
+
+  companion object {
+    const val PETFINDER_URI = "petfinder_uri"
+    const val PETFINDER_KEY = "petfinder_key"
   }
 }
